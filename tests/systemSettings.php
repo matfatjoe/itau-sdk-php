@@ -8,7 +8,7 @@ try {
 
     //ambiente
     $settings = new Settings();
-    $settings->sandBox = false;
+    $settings->sandBox = true;
 
     $settings->clientId = $_ENV['CLIENT_ID'];
     $settings->clientSecret = $_ENV['CLIENT_SECRET'];

@@ -23,7 +23,7 @@ class Settings extends DefaultModel
     public $correlationID;
 
     public $apiToken;
-
+    
     public function __construct()
     {
         $this->certificate = new Certificate();

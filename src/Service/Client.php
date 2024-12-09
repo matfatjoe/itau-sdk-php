@@ -4,6 +4,9 @@ namespace Itau\Service;
 
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\ClientException;
+use Itau\Exceptions\BadRequestException;
+use Itau\Exceptions\NotFoundException;
 use Itau\Models\Settings;
 use KryptonPay\Api\ApiContext;
 use Itau\Models\Response;
@@ -13,13 +16,17 @@ use Tightenco\Collect\Support\Collection;
 
 class Client
 {
+    const HTTP_EXCEPTION_TYPES = [
+        BadRequestException::HTTP_STATUS_CODE => BadRequestException::class,
+        NotFoundException::HTTP_STATUS_CODE => NotFoundException::class,
+    ];
+
     public $options;
-    private $method;
-    private $endPoint;
     private $client;
-    private $apiContext;
     private $response;
     protected $url;
+    protected $authUrl;
+
     /**
      * @var Settings
      */
@@ -31,7 +38,11 @@ class Client
         $this->response = new Response();
         $this->client = new GuzzleClient();
 
-        $this->setUrl($type);
+        if ($this->settings->sandBox) {
+            $this->setUrlHomologation($type);
+        } else {
+            $this->setUrlProd($type);
+        }
     }
 
     public function call(string $method, string $endPoint, $token, $data = null)
@@ -54,6 +65,27 @@ class Client
             return $this->handleApiReturn(
                 $this->client->request($method, $this->url . $endPoint, $options)
             );
+        } catch (ClientException $e) {
+            $response = $e->getResponse();
+            $requestParameters = $e->getRequest();
+
+            $statusCode = $response->getStatusCode();
+            $bodyContent = json_decode(
+                $response->getBody()->getContents(),
+                true
+            );
+
+            if (isset(self::HTTP_EXCEPTION_TYPES[$statusCode])) {
+                $exceptionClass = self::HTTP_EXCEPTION_TYPES[$statusCode];
+                $message = $bodyContent['detail'];
+
+                $exception = new $exceptionClass($message);
+                $exception->setRequestParameters($requestParameters);
+                $exception->setBodyContent($bodyContent);
+            } else {
+                $exception = $e;
+            }
+            throw $exception;
         } catch (\Exception $e) {
             return $this->handleApiError($e);
         }
@@ -77,8 +109,9 @@ class Client
             ->toArray();
     }
 
-    private function setUrl($type)
+    private function setUrlProd($type)
     {
+        $this->authUrl = 'https://sts.itau.com.br/api/oauth/token';
         switch ($type) {
             case 1:
                 $this->url = 'https://api.itau.com.br/cash_management/v2/';
@@ -88,6 +121,16 @@ class Client
                 break;
             case 3:
                 $this->url = 'https://secure.api.itau/pix_recebimentos/v2/';
+                break;
+        }
+    }
+
+    private function setUrlHomologation($type)
+    {
+        $this->authUrl = 'https://sandbox.devportal.itau.com.br/api/oauth/jwt';
+        switch ($type) {
+            case 1:
+                $this->url = 'https://sandbox.devportal.itau.com.br/itau-ep9-gtw-cash-management-ext-v2/v2/';
                 break;
         }
     }
@@ -180,19 +223,53 @@ class Client
         }
     }
 
-    protected function getApiToken()
+    public function getApiToken()
     {
-        $options['form_params'] = [
-            'grant_type' => 'client_credentials',
-            'client_id' => $this->settings->clientId,
-            'client_secret' => $this->settings->clientSecret,
-        ];
+        try {
+            $options['form_params'] = [
+                'grant_type' => 'client_credentials',
+                'client_id' => $this->settings->clientId,
+                'client_secret' => $this->settings->clientSecret,
+            ];
 
-        $options['cert'] = $this->settings->certificate->folder . $this->settings->certificate->certFile;
-        $options['ssl_key'] = $this->settings->certificate->folder . $this->settings->certificate->privateKey;
+            if (!$this->settings->sandBox) {
+                $options['cert'] = $this->settings->certificate->folder . $this->settings->certificate->certFile;
+                $options['ssl_key'] = $this->settings->certificate->folder . $this->settings->certificate->privateKey;
+            } else {
+                $options['verify'] = false;
+            }
 
-        return $this->handleApiReturn(
-            $this->client->request('POST', 'https://sts.itau.com.br/api/oauth/token', $options)
-        );
+            return $this->handleApiReturn(
+                $this->client->request('POST', $this->authUrl, $options)
+            );
+        } catch (ClientException $e) {
+            $response = $e->getResponse();
+            $requestParameters = $e->getRequest();
+
+            $statusCode = $response->getStatusCode();
+            $bodyContent = json_decode(
+                $response->getBody()->getContents(),
+                true
+            );
+
+            if (isset(self::HTTP_EXCEPTION_TYPES[$statusCode])) {
+                $exceptionClass = self::HTTP_EXCEPTION_TYPES[$statusCode];
+                $message = $bodyContent['detail'];
+
+                $exception = new $exceptionClass($message);
+                $exception->setRequestParameters($requestParameters);
+                $exception->setBodyContent($bodyContent);
+            } else {
+                $exception = $e;
+            }
+            throw $exception;
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function setClient(GuzzleClient $client)
+    {
+        $this->client = $client;
     }
 }

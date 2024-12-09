@@ -1,0 +1,76 @@
+{
+    "value": {
+        "data": {
+            "etapa_processo_boleto": "efetivacao",
+            "codigo_canal_operacao": "API",
+            "beneficiario": {
+                "id_beneficiario": "id_beneficiario"
+            },
+            "dado_boleto": {
+                "descricao_instrumento_cobranca": "boleto",
+                "forma_envio": "email",
+                "texto_endereco_email": "exemplo@itau.com.br",
+                "mensagem_email": "Texto para enviar ao cliente",
+                "tipo_boleto": "a vista",
+                "codigo_carteira": "109",
+                "valor_total_titulo": "00000000000001000",
+                "codigo_especie": "01",
+                "valor_abatimento": "000",
+                "data_emissao": "2022-12-21",
+                "pagamento_parcial": true,
+                "quantidade_maximo_parcial": 2,
+                "pagador": {
+                    "pessoa": {
+                        "nome_pessoa": "Pessoa teste",
+                        "tipo_pessoa": {
+                            "codigo_tipo_pessoa": "F",
+                            "numero_cadastro_pessoa_fisica": "cpf_cnpj_pagador"
+                        }
+                    },
+                    "endereco": {
+                        "nome_logradouro": "Rua endereço,71",
+                        "nome_bairro": "Bairro",
+                        "nome_cidade": "Cidade",
+                        "sigla_UF": "PE",
+                        "numero_CEP": "51340540"
+                    }
+                },
+                "dados_individuais_boleto": [
+                    {
+                        "numero_nosso_numero": "2000000",
+                        "data_vencimento": "2023-01-14",
+                        "valor_titulo": "00000000000119900",
+                        "texto_uso_beneficiario": "2",
+                        "texto_seu_numero": "2"
+                    }
+                ],
+                "multa": {
+                    "codigo_tipo_multa": "02",
+                    "data_multa": "2024-09-21",
+                    "percentual_multa": "000000100000"
+                },
+                "juros": {
+                    "codigo_tipo_juros": 90,
+                    "data_juros": "2024-09-21",
+                    "percentual_juros": "000000100000"
+                },
+                "recebimento_divergente": {
+                    "codigo_tipo_autorizacao": "01"
+                },
+                "instrucao_cobranca": [
+                    {
+                        "codigo_instrucao_cobranca": "2",
+                        "quantidade_dias_apos_vencimento": 10,
+                        "dia_util": false
+                    }
+                ],
+                "protesto": {
+                    "protesto": true,
+                    "quantidade_dias_protesto": 10
+                },
+                "desconto_expresso": false
+            }
+        }
+    },
+    "description": ""
+}

@@ -1,7 +1,6 @@
 {
-    "image": "php:7.4",
-    "features": {
-        "ghcr.io/devcontainers/features/node:1": {}
+    "build": {
+        "dockerfile": "Dockerfile"
     },
     "customizations": {
         "vscode": {
