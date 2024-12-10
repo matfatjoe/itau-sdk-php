@@ -28,11 +28,11 @@
         "symfony/property-access": "^5.0",
         "league/flysystem": "^1.0",
         "guzzlehttp/guzzle": "7.0",
-        "vlucas/phpdotenv": "^5.4",
         "tightenco/collect": "^7.0"
     },
     "require-dev": {
         "symfony/var-dumper": "^5.0",
+        "vlucas/phpdotenv": "^5.4",
         "pestphp/pest": "^1.23"
     },
     "autoload": {
