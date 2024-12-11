@@ -38,11 +38,7 @@ class Client
         $this->response = new Response();
         $this->client = new GuzzleClient();
 
-        if ($this->settings->sandBox) {
-            $this->setUrlHomologation($type);
-        } else {
-            $this->setUrlProd($type);
-        }
+        $this->setUrl($type);
     }
 
     public function call(string $method, string $endPoint, $token, $data = null)
@@ -54,6 +50,7 @@ class Client
                 'x-itau-correlationID' => $this->settings->correlationID,
                 'Authorization' => 'Bearer ' . $token
             ];
+
             $options['cert'] = $this->settings->certificate->folder . $this->settings->certificate->certFile;
             $options['ssl_key'] = $this->settings->certificate->folder . $this->settings->certificate->privateKey;
 
@@ -109,7 +106,7 @@ class Client
             ->toArray();
     }
 
-    private function setUrlProd($type)
+    private function setUrl($type)
     {
         $this->authUrl = 'https://sts.itau.com.br/api/oauth/token';
         switch ($type) {
@@ -125,21 +122,10 @@ class Client
         }
     }
 
-    private function setUrlHomologation($type)
-    {
-        $this->authUrl = 'https://sandbox.devportal.itau.com.br/api/oauth/jwt';
-        switch ($type) {
-            case 1:
-                $this->url = 'https://sandbox.devportal.itau.com.br/itau-ep9-gtw-cash-management-ext-v2/v2/';
-                break;
-        }
-    }
-
     private function normalize(object $data): array
     {
-        $serializer = new Serializer([new ObjectNormalizer()]);
-        $data = self::arrayRemoveNull($serializer->normalize($data));
-
+        $data = json_decode(json_encode($data), true);
+        $data = self::arrayRemoveNull($data);
         foreach ($data as $key => $d) {
             if (empty($d)) {
                 unset($data[$key]);
@@ -232,12 +218,8 @@ class Client
                 'client_secret' => $this->settings->clientSecret,
             ];
 
-            if (!$this->settings->sandBox) {
-                $options['cert'] = $this->settings->certificate->folder . $this->settings->certificate->certFile;
-                $options['ssl_key'] = $this->settings->certificate->folder . $this->settings->certificate->privateKey;
-            } else {
-                $options['verify'] = false;
-            }
+            $options['cert'] = $this->settings->certificate->folder . $this->settings->certificate->certFile;
+            $options['ssl_key'] = $this->settings->certificate->folder . $this->settings->certificate->privateKey;
 
             return $this->handleApiReturn(
                 $this->client->request('POST', $this->authUrl, $options)
