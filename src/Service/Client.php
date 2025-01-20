@@ -21,6 +21,7 @@ class Client
         NotFoundException::HTTP_STATUS_CODE => NotFoundException::class,
     ];
 
+    public $token;
     public $options;
     private $client;
     private $response;
@@ -55,8 +56,15 @@ class Client
             $options['ssl_key'] = $this->settings->certificate->folder . $this->settings->certificate->privateKey;
 
             $options['json'] = null;
+            $options['query'] = null;
+
             if ($data) {
-                $options['json'] = $this->normalize($data);
+                if ($method == "GET") {
+                    $options['query'] = $data;
+                }
+                if ($method == "POST") {
+                    $options['json'] = $this->normalize($data);
+                }
             }
 
             return $this->handleApiReturn(
@@ -106,7 +114,7 @@ class Client
             ->toArray();
     }
 
-    private function setUrl($type)
+    protected function setUrl($type)
     {
         $this->authUrl = 'https://sts.itau.com.br/api/oauth/token';
         switch ($type) {
@@ -118,6 +126,9 @@ class Client
                 break;
             case 3:
                 $this->url = 'https://secure.api.itau/pix_recebimentos/v2/';
+                break;
+            case 4:
+                $this->url = 'https://boletos.cloud.itau.com.br/boletos/v3/';
                 break;
         }
     }
@@ -212,18 +223,23 @@ class Client
     public function getApiToken()
     {
         try {
-            $options['form_params'] = [
-                'grant_type' => 'client_credentials',
-                'client_id' => $this->settings->clientId,
-                'client_secret' => $this->settings->clientSecret,
+            $options = [
+                'form_params' => [
+                    'grant_type' => 'client_credentials',
+                    'client_id' => $this->settings->clientId,
+                    'client_secret' => $this->settings->clientSecret,
+                ]
             ];
 
             $options['cert'] = $this->settings->certificate->folder . $this->settings->certificate->certFile;
             $options['ssl_key'] = $this->settings->certificate->folder . $this->settings->certificate->privateKey;
+            $options['verify'] = true;
 
-            return $this->handleApiReturn(
+            $this->token = $this->handleApiReturn(
                 $this->client->request('POST', $this->authUrl, $options)
             );
+
+            return $this->token;
         } catch (ClientException $e) {
             $response = $e->getResponse();
             $requestParameters = $e->getRequest();
@@ -253,5 +269,13 @@ class Client
     public function setClient(GuzzleClient $client)
     {
         $this->client = $client;
+    }
+
+    public function setCertificate()
+    {
+        $this->client = new GuzzleClient([
+            'cert' => $this->settings->certificate->folder . $this->settings->certificate->certFile,
+            'ssl_key' => $this->settings->certificate->folder . $this->settings->certificate->privateKey
+        ]);
     }
 }

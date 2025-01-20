@@ -14,6 +14,7 @@ class Factory extends Client
     const PIX = 3;
 
     public $type;
+    public $token;
 
     public function __construct($settings, $type)
     {
@@ -97,7 +98,13 @@ class Factory extends Client
 
     public function register($data, $method, $endpoint)
     {
-        $token = $this->getApiToken();
-        return $this->call($method, $endpoint, $token->access_token, $data);
+        $this->setUrl($this->type);
+        return $this->call($method, $endpoint, $this->token->access_token, $data);
+    }
+
+    public function list($method, $endpoint, $filters)
+    {
+        $this->setUrl(4);
+        return $this->call($method, $endpoint, $this->token->access_token, $filters);
     }
 }
