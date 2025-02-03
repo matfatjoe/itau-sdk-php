@@ -18,6 +18,7 @@ class Client
 {
     const HTTP_EXCEPTION_TYPES = [
         BadRequestException::HTTP_STATUS_CODE => BadRequestException::class,
+        422 => BadRequestException::class,
         NotFoundException::HTTP_STATUS_CODE => NotFoundException::class,
     ];
 
@@ -82,7 +83,13 @@ class Client
 
             if (isset(self::HTTP_EXCEPTION_TYPES[$statusCode])) {
                 $exceptionClass = self::HTTP_EXCEPTION_TYPES[$statusCode];
-                $message = $bodyContent['detail'];
+                $message = $bodyContent['mensagem'];
+                if (!empty($bodyContent['campos'])) {
+                    $invalidFields = array_map(function ($campo) {
+                        return "Campo '{$campo['campo']}' ({$campo['valor']}): {$campo['mensagem']}";
+                    }, $bodyContent['campos']);
+                    $message .= "<br>Detalhes:<br>" . implode("<br>", $invalidFields);
+                }
 
                 $exception = new $exceptionClass($message);
                 $exception->setRequestParameters($requestParameters);
