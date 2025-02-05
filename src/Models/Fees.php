@@ -1,4 +1,6 @@
-<?php namespace Itau\Models;
+<?php
+
+namespace Itau\Models;
 
 class Fees
 {
@@ -22,6 +24,11 @@ class Fees
     {
         $this->codigo_tipo_juros = $feesData['code'];
         $this->quantidade_dias_juros = $feesData['quantity_days'];
-        $this->valor_juros = $feesData['value'];
+        $this->valor_juros = str_pad(
+            number_format((float) $feesData['value'], 2, '', ''),
+            17,
+            '0',
+            STR_PAD_LEFT
+        ) ?? null;
     }
 }

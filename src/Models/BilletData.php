@@ -1,4 +1,6 @@
-<?php namespace Itau\Models;
+<?php
+
+namespace Itau\Models;
 
 class BilletData
 {
@@ -119,6 +121,12 @@ class BilletData
      */
     public $recebimento_divergente;
 
+    /**
+     * @var BillingMessages Configuração para indicar se serão enviadas mensagens de cobrança
+     */
+    public $mensagens_cobranca;
+
+
     public function __construct()
     {
         $this->pagador = new Payer();
@@ -163,19 +171,19 @@ class BilletData
             $this->sacador_avalista->build($billet['guarantor']);
         }
 
-        if (isset($data['fees'])) {
+        if (isset($billet['fees'])) {
             $this->juros = new Fees();
-            $this->juros->build($data['fees']);
+            $this->juros->build($billet['fees']);
         }
 
-        if (isset($data['fine'])) {
+        if (isset($billet['fine'])) {
             $this->multa = new Fine();
-            $this->multa->build($data['fine']);
+            $this->multa->build($billet['fine']);
         }
 
-        if (isset($data['discount'])) {
+        if (isset($billet['discount'])) {
             $this->desconto = new Discount();
-            $this->desconto->build($data['discount']);
+            $this->desconto->build($billet['discount']);
         }
 
         if (isset($data['billing_message_list'])) {
@@ -188,7 +196,14 @@ class BilletData
 
         if (isset($data['divergent_receipt'])) {
             $this->recebimento_divergente = new DivergentReceipt();
-            $this->recebimento_divergente->codigo_tipo_autorizacao = $data['divergent_receipt']['code'];
+            $this->recebimento_divergente->codigo_tipo_autorizacao = $billet['divergent_receipt']['code'];
+        }
+
+        if (isset($billet['billing_messages'])) {
+            foreach ($billet['billing_messages'] as $key => $message) {
+                $this->mensagens_cobranca[$key] = new BillingMessages();
+                $this->mensagens_cobranca[$key]->mensagem = $message;
+            }
         }
     }
 }

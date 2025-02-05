@@ -1,4 +1,6 @@
-<?php namespace Itau\Models;
+<?php
+
+namespace Itau\Models;
 
 class Fine
 {
@@ -21,12 +23,26 @@ class Fine
      * @var string Data de início de cobrança de multa. Caso o campo esteja vazio, será automaticamente assumido que a cobrança de multa se inicia logo após o vencimento. Formato: AAAA-MM-DD
      */
     public $data_multa;
-    
+
     public function build($data)
     {
         $this->codigo_tipo_multa = $data['code'];
-        $this->valor_multa = $data['value'];
-        $this->percentual_multa = $data['percent'];
-        $this->data_multa = $data['date'];
+        if (isset($data['value'])) {
+            $this->valor_multa = str_pad(
+                number_format((float) $data['value'], 2, '', ''),
+                17,
+                '0',
+                STR_PAD_LEFT
+            ) ?? null;
+        }
+        if (isset($data['percent'])) {
+            $this->percentual_multa = str_pad(
+                number_format((float) $data['percent'], 5, '', ''),
+                12,
+                '0',
+                STR_PAD_LEFT
+            ) ?? null;
+        }
+        $this->data_multa = $data['date'] ?? null;
     }
 }
