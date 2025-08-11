@@ -27,7 +27,7 @@
         "symfony/serializer": "^5.0",
         "symfony/property-access": "^5.0",
         "league/flysystem": "^1.0",
-        "guzzlehttp/guzzle": "7.0",
+        "guzzlehttp/guzzle": "^7.9",
         "tightenco/collect": "^7.0"
     },
     "require-dev": {
