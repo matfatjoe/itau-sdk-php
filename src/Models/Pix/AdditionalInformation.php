@@ -12,7 +12,7 @@ class AdditionalInformation
     public $nome;
 
     /**
-     * @var	string<= 200 characters
+     * @var string<= 200 characters
      * Valor ou dados a serem apresentados ao pagador.
      * Se for enviado, é necessário o envio do campo infoAdicionais.nome, campo com limitação de 200 caracteres
      */

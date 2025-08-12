@@ -7,6 +7,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use Itau\Exceptions\BadRequestException;
 use Itau\Exceptions\NotFoundException;
+use Itau\Exceptions\UnprocessableEntityException;
 use Itau\Models\Settings;
 use KryptonPay\Api\ApiContext;
 use Itau\Models\Response;
@@ -18,7 +19,7 @@ class Client
 {
     const HTTP_EXCEPTION_TYPES = [
         BadRequestException::HTTP_STATUS_CODE => BadRequestException::class,
-        422 => BadRequestException::class,
+        UnprocessableEntityException::HTTP_STATUS_CODE => UnprocessableEntityException::class,
         NotFoundException::HTTP_STATUS_CODE => NotFoundException::class,
     ];
 
@@ -50,14 +51,12 @@ class Client
                 'x-itau-apikey' => $this->settings->clientId,
                 'x-itau-flowID' => $this->settings->clientSecret,
                 'x-itau-correlationID' => $this->settings->correlationID,
+                'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . $token
             ];
 
             $options['cert'] = $this->settings->certificate->folder . $this->settings->certificate->certFile;
             $options['ssl_key'] = $this->settings->certificate->folder . $this->settings->certificate->privateKey;
-
-            $options['json'] = null;
-            $options['query'] = null;
 
             if ($data) {
                 if ($method == "GET") {
@@ -66,8 +65,9 @@ class Client
                 if ($method == "POST") {
                     $options['json'] = $this->normalize($data);
                 }
+            } else {
+                $options['body'] = '{}';
             }
-
             return $this->handleApiReturn(
                 $this->client->request($method, $this->url . $endPoint, $options)
             );
@@ -88,7 +88,7 @@ class Client
                     $invalidFields = array_map(function ($campo) {
                         return "Campo '{$campo['campo']}' ({$campo['valor']}): {$campo['mensagem']}";
                     }, $bodyContent['campos']);
-                    $message .= "<br>Detalhes:<br>" . implode("<br>", $invalidFields);
+                    $message .= "\nDetalhes:\n" . implode("\n", $invalidFields);
                 }
 
                 $exception = new $exceptionClass($message);

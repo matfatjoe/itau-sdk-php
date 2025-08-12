@@ -102,9 +102,33 @@ class Factory extends Client
         return $this->call($method, $endpoint, $this->token->access_token, $data);
     }
 
-    public function list($method, $endpoint, $filters)
+    public function getFrancesas($endpoint, $filters)
     {
         $this->setUrl(4);
-        return $this->call($method, $endpoint, $this->token->access_token, $filters);
+        return $this->call('GET', $endpoint, $this->token->access_token, $filters);
+    }
+
+    public function getFrancesasMovimentacao($endpoint, $filters)
+    {
+        $this->setUrl(4);
+        return $this->call('GET', $endpoint, $this->token->access_token, $filters);
+    }
+
+    /**
+     * Get the value of token
+     */
+    public function getToken()
+    {
+        return $this->token;
+    }
+
+    /**
+     * Set the value of token
+     */
+    public function setToken($token): self
+    {
+        $this->token = $token;
+
+        return $this;
     }
 }

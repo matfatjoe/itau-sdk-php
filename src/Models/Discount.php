@@ -1,6 +1,4 @@
-<?php
-
-namespace Itau\Models;
+<?php namespace Itau\Models;
 
 class Discount
 {
@@ -11,17 +9,25 @@ class Discount
     public $codigo_tipo_desconto;
 
     /**
-     * @var array Lista de objetos DiscountDetail representando os descontos aplicados.
+     * @var string Data limite de cobrança de desconto. Caso o campo esteja vazio, será automaticamente assumido que a cobrança de desconto é até a data de vencimento. Formato: AAAA-MM-DD
      */
-    public $descontos = [];
+    public $data_desconto;
 
+    /**
+     * @var string Valor do desconto a ser cobrado. Obrigatório para codigo_tipo_desconto 1 ou 91. Formato do campo: 15 dígitos inteiros e 2 casas decimais
+     */
+    public $valor_desconto;
+
+    /**
+     * @var string Percentual do desconto concedido. Obrigatório para codigo_tipo_desconto 2 ou 90. Formato do campo: 7 dígitos inteiros e 5 casas decimais.
+     */
+    public $percentual_desconto;
 
     public function build($data)
     {
-        $this->codigo_tipo_desconto = $data['code'] ?? null;
-        foreach ($data['discounts'] as $key => $discount) {
-            $this->descontos[$key] = new DiscountDetail();
-            $this->descontos[$key]->build($discount);
-        }
+        $this->codigo_tipo_desconto = $data['code'];
+        $this->valor_desconto = $data['value'];
+        $this->percentual_desconto = $data['percent'];
+        $this->data_desconto = $data['date'];
     }
 }
