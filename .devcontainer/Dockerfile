@@ -1,4 +1,4 @@
-FROM php:7.4
+FROM php:8.1
 
 # Instalar extensões e ferramentas adicionais, se necessário
 RUN apt-get update && apt-get install -y \
